@@ -1,0 +1,91 @@
+{
+  "last_run": "2026-04-09T15:54:28",
+  "job_history": {
+    "tow_reviews_pragathi": {
+      "job_id": "tow_reviews_pragathi",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T16:10:32"
+    },
+    "tow_reviews_kokapet": {
+      "job_id": "tow_reviews_kokapet",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T16:21:02"
+    },
+    "tow_reviews_hafeezpet": {
+      "job_id": "tow_reviews_hafeezpet",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T16:37:53"
+    },
+    "tow_reviews_general": {
+      "job_id": "tow_reviews_general",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T16:49:21"
+    },
+    "market_tow_news": {
+      "job_id": "market_tow_news",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T16:54:08"
+    },
+    "competitor_24mantra": {
+      "job_id": "competitor_24mantra",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T15:54:44"
+    },
+    "competitor_naturally_yours": {
+      "job_id": "competitor_naturally_yours",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T15:54:47"
+    },
+    "competitor_new_entrants": {
+      "job_id": "competitor_new_entrants",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T15:54:50"
+    },
+    "competitor_blinkit_organic": {
+      "job_id": "competitor_blinkit_organic",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T15:54:53"
+    },
+    "sentiment_complaints": {
+      "job_id": "sentiment_complaints",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T15:54:56"
+    },
+    "sentiment_social": {
+      "job_id": "sentiment_social",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T15:54:59"
+    },
+    "market_organic_trend": {
+      "job_id": "market_organic_trend",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T15:55:02"
+    },
+    "market_millet_trend": {
+      "job_id": "market_millet_trend",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T15:55:05"
+    },
+    "pricing_organic_staples": {
+      "job_id": "pricing_organic_staples",
+      "status": "completed",
+      "records": 0,
+      "timestamp": "2026-04-09T15:55:08"
+    }
+  },
+  "total_runs": 6,
+  "total_records_collected": 0
+}
