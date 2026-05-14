@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>env-sentinel CI / GitHub Actions</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; font-family: 'SF Mono', 'Fira Code', monospace; padding: 32px; }
+
+  .window {
+    background: #161b22;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 760px;
+    border: 1px solid #30363d;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  }
+
+  .titlebar {
+    background: #21262d;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #30363d;
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.red    { background: #ff5f57; }
+  .dot.yellow { background: #febc2e; }
+  .dot.green  { background: #28c840; }
+  .title-text { color: #8b949e; font-size: 13px; margin-left: 8px; }
+
+  .terminal { padding: 20px 24px; font-size: 13px; line-height: 1.75; }
+
+  .prompt { color: #7ee787; }
+  .cmd    { color: #e6edf3; }
+  .flag   { color: #79c0ff; }
+  .arg    { color: #ffa657; }
+  .ok     { color: #3fb950; }
+  .warn   { color: #d29922; }
+  .err    { color: #f85149; }
+  .yaml-key   { color: #7ee787; }
+  .yaml-val   { color: #ffa657; }
+  .yaml-str   { color: #a5d6ff; }
+  .yaml-cmd   { color: #e6edf3; }
+  .yaml-comm  { color: #484f58; }
+  .step   { color: #58a6ff; font-weight: bold; }
+  .gray   { color: #8b949e; }
+  .white  { color: #e6edf3; }
+  .section-title { color: #58a6ff; font-weight: bold; }
+  .annotation-err  { color: #ff7b72; }
+  .annotation-warn { color: #e3b341; }
+
+  .line   { display: block; white-space: pre; }
+  .blank  { display: block; height: 5px; }
+  .indent { display: inline-block; width: 16px; }
+  .indent2 { display: inline-block; width: 32px; }
+</style>
+</head>
+<body>
+
+<div class="window" id="shot-ci">
+  <div class="titlebar">
+    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+    <span class="title-text">GitHub Actions — Environment Sentinel</span>
+  </div>
+  <div class="terminal">
+    <span class="line"><span class="yaml-comm"># .github/workflows/env-check.yml</span></span>
+    <span class="line"><span class="yaml-key">name:</span> <span class="yaml-str">Environment Sentinel</span></span>
+    <span class="line"><span class="yaml-key">on:</span></span>
+    <span class="line">  <span class="yaml-key">pull_request:</span></span>
+    <span class="line">    <span class="yaml-key">paths:</span> <span class="yaml-str">[ ".env*" ]</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="yaml-key">jobs:</span></span>
+    <span class="line">  <span class="yaml-key">env-check:</span></span>
+    <span class="line">    <span class="yaml-key">steps:</span></span>
+    <span class="line">      <span class="yaml-comm">- pip install env-sentinel</span></span>
+    <span class="line">      <span class="yaml-comm">- env-sentinel check --template .env.example \</span></span>
+    <span class="line">          <span class="yaml-comm">--check .env.staging --check .env.production</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="gray">────────────────────────────────────────────────────────</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="step">▶  Run: env-sentinel check</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="ok">  ✔ Diff .env.example → .env.staging    (0 issues)</span></span>
+    <span class="line"><span class="ok">  ✔ Validate .env.staging               (0 errors)</span></span>
+    <span class="line"><span class="ok">  ✔ Secret scan .env.staging            (0 findings)</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="err">  ✖ Diff .env.example → .env.production (2 issues)</span></span>
+    <span class="line"><span class="annotation-err">    ::error file=.env.production::Missing key: PAYMENT_WEBHOOK_SECRET</span></span>
+    <span class="line"><span class="annotation-err">    ::error file=.env.production::Missing key: SENTRY_DSN</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="ok">  ✔ Validate .env.production            (0 errors)</span></span>
+    <span class="line"><span class="ok">  ✔ Secret scan .env.production         (0 findings)</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="err">  ❌  2 issue(s) found. Exiting with code 1.</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="err">Error: Process completed with exit code 1.</span></span>
+  </div>
+</div>
+
+</body>
+</html>
