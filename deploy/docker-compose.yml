@@ -1,0 +1,107 @@
+version: "3.9"
+
+# ── TOW Intelligence Platform — Docker Compose ──────────────────
+#
+# Services:
+#   api      — FastAPI + Uvicorn (the main app)
+#   ingest   — hourly CSV → DB ingest job
+#   scan     — every-30-min alert detection job
+#   nginx    — TLS termination + reverse proxy
+#
+# Usage:
+#   cp .env.example .env && nano .env       # fill in secrets
+#   docker compose up -d
+#   docker compose exec api python -m intel.manage create-admin \
+#     --email admin@tow.local --password ChangeMe1234
+#
+# Upgrades (zero-downtime rolling restart):
+#   docker compose pull
+#   docker compose up -d --no-deps api
+
+services:
+
+  # ── API server ─────────────────────────────────────────────────
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    env_file: ../.env
+    environment:
+      INTEL_DB_PATH: /opt/storm/data/intel.db
+      INTEL_ENV: production
+    volumes:
+      - storm_data:/opt/storm/data     # persists intel.db across restarts
+      - storm_csvs:/opt/storm          # scrapers write CSVs here
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - internal
+
+  # ── Ingest — runs hourly via docker compose run / cron ─────────
+  # On VPS with systemd: use intel-ingest.timer instead.
+  # On Docker-only: add a simple host cron that calls:
+  #   docker compose -f /opt/storm/deploy/docker-compose.yml \
+  #     run --rm ingest
+  ingest:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: "no"
+    env_file: ../.env
+    environment:
+      INTEL_DB_PATH: /opt/storm/data/intel.db
+    volumes:
+      - storm_data:/opt/storm/data
+      - storm_csvs:/opt/storm
+    command: ["python", "-m", "intel.manage", "ingest"]
+    networks:
+      - internal
+    profiles: ["jobs"]   # only runs when explicitly called or via cron
+
+  # ── Alert scan — runs every 30 min ────────────────────────────
+  scan:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: "no"
+    env_file: ../.env
+    environment:
+      INTEL_DB_PATH: /opt/storm/data/intel.db
+    volumes:
+      - storm_data:/opt/storm/data
+    command: ["python", "-m", "intel.manage", "scan"]
+    networks:
+      - internal
+    profiles: ["jobs"]
+
+  # ── Nginx reverse proxy ────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/storm.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro       # Let's Encrypt certs (host-managed)
+      - /var/www/certbot:/var/www/certbot:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - internal
+
+volumes:
+  storm_data:    # intel.db lives here — back this up
+  storm_csvs:    # CSV output from scrapers
+
+networks:
+  internal:
+    driver: bridge

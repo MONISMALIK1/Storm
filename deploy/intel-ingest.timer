@@ -1,0 +1,15 @@
+# /etc/systemd/system/intel-ingest.timer
+# Runs the ingest job every hour on the hour.
+
+[Unit]
+Description=TOW Intelligence — Ingest timer (hourly)
+Requires=intel-ingest.service
+
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=120          # spread load if multiple timers fire at :00
+Persistent=true                  # run the missed job on boot if system was off
+Unit=intel-ingest.service
+
+[Install]
+WantedBy=timers.target

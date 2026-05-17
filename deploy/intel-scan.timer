@@ -1,0 +1,15 @@
+# /etc/systemd/system/intel-scan.timer
+# Runs the alert scanner every 30 minutes.
+
+[Unit]
+Description=TOW Intelligence — Alert scan timer (every 30 min)
+Requires=intel-scan.service
+
+[Timer]
+OnCalendar=*:0/30               # :00 and :30 of every hour
+RandomizedDelaySec=60
+Persistent=true
+Unit=intel-scan.service
+
+[Install]
+WantedBy=timers.target

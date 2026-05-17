@@ -1,0 +1,20 @@
+# /etc/systemd/system/intel-ingest.service
+# One-shot service triggered by intel-ingest.timer every hour.
+# Reads all CSVs + gmap data and upserts into intel.db.
+
+[Unit]
+Description=TOW Intelligence — Ingest run
+After=network.target
+
+[Service]
+Type=oneshot
+User=storm
+Group=storm
+WorkingDirectory=/opt/storm
+EnvironmentFile=/opt/storm/.env
+ExecStart=/opt/storm/.venv/bin/python -m intel.manage ingest
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

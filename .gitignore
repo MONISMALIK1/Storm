@@ -1,0 +1,29 @@
+# Environment / secrets
+.env
+.env.local
+.env.production
+
+# Database (never commit the live DB)
+*.db
+*.db-shm
+*.db-wal
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Scheduler state (machine-specific)
+scheduler_state.json

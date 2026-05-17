@@ -1,0 +1,49 @@
+# /etc/systemd/system/intel-api.service
+#
+# Runs the FastAPI + Uvicorn server.
+# Auto-restarts on crash, logs to journald (view with: journalctl -u intel-api -f)
+#
+# Install:
+#   sudo cp deploy/intel-api.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now intel-api
+
+[Unit]
+Description=TOW Intelligence API (Uvicorn)
+After=network.target
+Wants=network.target
+
+[Service]
+Type=exec
+User=storm                          # dedicated non-root user (see deploy guide)
+Group=storm
+WorkingDirectory=/opt/storm         # project root on the server
+
+# Load environment from the .env file
+EnvironmentFile=/opt/storm/.env
+
+# Run uvicorn directly (not through manage.py) for cleaner signal handling.
+# --workers 1 is correct for SQLite (single writer) + in-process event bus.
+ExecStart=/opt/storm/.venv/bin/uvicorn intel.api:app \
+    --host 127.0.0.1 \
+    --port 8000 \
+    --workers 1 \
+    --log-level info \
+    --no-access-log
+
+# Graceful shutdown: SIGTERM → 30 s → SIGKILL
+TimeoutStopSec=30
+KillMode=mixed
+
+# Auto-restart on any non-zero exit
+Restart=on-failure
+RestartSec=5
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/storm           # allow writing intel.db + CSVs
+
+[Install]
+WantedBy=multi-user.target

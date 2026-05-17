@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Organic World — Intelligence Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+
+<!-- ══════════ LOGIN ══════════ -->
+<div id="login-screen" class="login-overlay">
+  <div class="login-card">
+    <div class="login-logo">🌿</div>
+    <h1 class="login-title">Organic World Intelligence</h1>
+    <p class="login-sub">Sign in to access the dashboard</p>
+    <form id="login-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="admin@tow.local" required />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" required />
+      </div>
+      <div id="login-error" class="login-error"></div>
+      <button type="submit" class="btn-primary btn-full">Sign In</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════ APP SHELL ══════════ -->
+<div id="app" class="app-shell hidden">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">🌿</span>
+      <span class="brand-name">TOW Intel</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" data-tab="overview">
+        <span class="nav-icon">📊</span><span>Overview</span>
+      </a>
+      <a class="nav-item" data-tab="app-experience">
+        <span class="nav-icon">📱</span><span>App Experience</span>
+      </a>
+      <a class="nav-item" data-tab="product-quality">
+        <span class="nav-icon">🥬</span><span>Product Quality</span>
+      </a>
+      <a class="nav-item" data-tab="store-experience">
+        <span class="nav-icon">🏪</span><span>Store Reviews</span>
+      </a>
+      <a class="nav-item" data-tab="market-intel">
+        <span class="nav-icon">🧠</span><span>Market Intel</span>
+      </a>
+      <a class="nav-item" data-tab="explorer">
+        <span class="nav-icon">🔍</span><span>Review Explorer</span>
+      </a>
+      <a class="nav-item" data-tab="live-feed">
+        <span class="nav-icon">⚡</span><span>Live Feed</span>
+        <span id="live-badge" class="live-dot"></span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <span id="user-role-badge" class="role-badge"></span>
+        <span id="user-email-short"></span>
+      </div>
+      <button id="logout-btn" class="btn-ghost btn-sm">Sign out</button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2 id="tab-title">Overview</h2>
+        <span id="tab-sub" class="tab-sub">Real-time competitive intelligence</span>
+      </div>
+      <div class="topbar-right">
+        <div id="ws-status" class="ws-indicator ws-connecting" title="WebSocket status">●</div>
+        <button id="refresh-btn" class="btn-ghost btn-sm">↻ Refresh</button>
+        <button id="ingest-btn" class="btn-outline btn-sm hidden" title="Trigger data ingest">⬆ Ingest</button>
+        <button id="scan-btn" class="btn-outline btn-sm" title="Run alert scan">🔔 Scan Alerts</button>
+      </div>
+    </header>
+
+    <!-- Alert banner -->
+    <div id="alert-banner" class="alert-banner hidden"></div>
+
+    <!-- ══ OVERVIEW ══════════════════════════════════════════════════ -->
+    <section id="tab-overview" class="tab-panel active">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Store Reviews</div>
+          <div class="kpi-value" id="kv-reviews">—</div>
+          <div class="kpi-sub" id="ks-reviews">avg rating</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">App Reviews</div>
+          <div class="kpi-value" id="kv-app">—</div>
+          <div class="kpi-sub" id="ks-app">avg stars</div>
+        </div>
+        <div class="kpi-card kpi-warning">
+          <div class="kpi-label">Active Alerts</div>
+          <div class="kpi-value" id="kv-alerts">—</div>
+          <div class="kpi-sub">unacknowledged</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">News (24 h)</div>
+          <div class="kpi-value" id="kv-news">—</div>
+          <div class="kpi-sub">new items</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Intel Signals (24 h)</div>
+          <div class="kpi-value" id="kv-intel">—</div>
+          <div class="kpi-sub">new signals</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Products</div>
+          <div class="kpi-value" id="kv-products">—</div>
+          <div class="kpi-sub" id="ks-products">in catalogue</div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="panel-row">
+        <div class="panel">
+          <div class="panel-header">Store Sentiment</div>
+          <div class="chart-wrap"><canvas id="chart-sentiment-donut"></canvas></div>
+        </div>
+        <div class="panel panel-wide">
+          <div class="panel-header">App Review Topics</div>
+          <div class="chart-wrap"><canvas id="chart-topics-bar"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Top Keywords</div>
+          <div id="keyword-cloud" class="keyword-cloud"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">Recent Alerts
+          <span class="header-action" id="view-all-alerts">View all →</span>
+        </div>
+        <div id="recent-alerts-list" class="alert-list"></div>
+      </div>
+    </section>
+
+    <!-- ══ APP EXPERIENCE ═══════════════════════════════════════════ -->
+    <section id="tab-app-experience" class="tab-panel hidden">
+      <div class="kpi-grid kpi-grid-4">
+        <div class="kpi-card">
+          <div class="kpi-label">Avg Star Rating</div>
+          <div class="kpi-value" id="app-avg-stars">—</div>
+          <div class="kpi-sub">out of 5</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total App Reviews</div>
+          <div class="kpi-value" id="app-total">—</div>
+          <div class="kpi-sub">app store + play store</div>
+        </div>
+        <div class="kpi-card kpi-danger">
+          <div class="kpi-label">Safety Complaints</div>
+          <div class="kpi-value" id="app-safety">—</div>
+          <div class="kpi-sub">stale / rotten mentions</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">NPS Proxy</div>
+          <div class="kpi-value" id="app-nps">—</div>
+          <div class="kpi-sub">recommend − uninstall rate</div>
+        </div>
+      </div>
+
+      <!-- Row 1: star bar (wide) + two small donuts -->
+      <div class="panel-row">
+        <div class="panel panel-wide">
+          <div class="panel-header">Star Rating Distribution</div>
+          <div class="chart-wrap chart-wrap-tall"><canvas id="chart-app-stars"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Sentiment</div>
+          <div class="chart-wrap chart-wrap-sm"><canvas id="chart-app-sentiment"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Platform Split</div>
+          <div class="chart-wrap chart-wrap-sm"><canvas id="chart-app-platform"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 2: topic breakdown -->
+      <div class="panel-row">
+        <div class="panel">
+          <div class="panel-header">Review Topics Breakdown</div>
+          <div class="chart-wrap"><canvas id="chart-app-topics"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Review list -->
+      <div class="panel">
+        <div class="panel-header">
+          App Reviews
+          <div class="filter-row">
+            <select id="app-filter-platform" class="filter-select">
+              <option value="">All Platforms</option>
+              <option value="app_store">App Store</option>
+              <option value="play_store">Play Store</option>
+            </select>
+            <select id="app-filter-topic" class="filter-select">
+              <option value="">All Topics</option>
+              <option value="app_ux">App UX</option>
+              <option value="product_quality">Product Quality</option>
+              <option value="delivery">Delivery</option>
+              <option value="customer_service">Customer Service</option>
+              <option value="pricing">Pricing</option>
+            </select>
+            <select id="app-filter-sentiment" class="filter-select">
+              <option value="">All Sentiments</option>
+              <option value="positive">Positive</option>
+              <option value="neutral">Neutral</option>
+              <option value="negative">Negative</option>
+            </select>
+          </div>
+        </div>
+        <div id="app-reviews-list" class="review-list"></div>
+      </div>
+    </section>
+
+    <!-- ══ PRODUCT QUALITY ══════════════════════════════════════════ -->
+    <section id="tab-product-quality" class="tab-panel hidden">
+      <div class="kpi-grid kpi-grid-4">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Products</div>
+          <div class="kpi-value" id="prod-total">—</div>
+          <div class="kpi-sub">in catalogue</div>
+        </div>
+        <div class="kpi-card kpi-success">
+          <div class="kpi-label">In Stock</div>
+          <div class="kpi-value" id="prod-in-stock">—</div>
+          <div class="kpi-sub">available</div>
+        </div>
+        <div class="kpi-card kpi-danger">
+          <div class="kpi-label">Out of Stock</div>
+          <div class="kpi-value" id="prod-oos">—</div>
+          <div class="kpi-sub">unavailable</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Avg Discount</div>
+          <div class="kpi-value" id="prod-disc">—</div>
+          <div class="kpi-sub">% across catalogue</div>
+        </div>
+      </div>
+
+      <!-- Row 1: stock donut + avg price by category -->
+      <div class="panel-row">
+        <div class="panel">
+          <div class="panel-header">Stock Status</div>
+          <div class="chart-wrap chart-wrap-sm"><canvas id="chart-prod-stock"></canvas></div>
+        </div>
+        <div class="panel panel-wide">
+          <div class="panel-header">Avg Price by Category (₹)</div>
+          <div class="chart-wrap"><canvas id="chart-prod-prices"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 2: top discounts + products-per-category bar -->
+      <div class="panel-row">
+        <div class="panel panel-wide">
+          <div class="panel-header">Top Discounted Products</div>
+          <div id="top-discounts-list" class="discount-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Products by Category</div>
+          <div class="chart-wrap chart-wrap-tall"><canvas id="chart-cat-bar"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Product table -->
+      <div class="panel">
+        <div class="panel-header">
+          Product Catalogue
+          <div class="filter-row">
+            <input id="prod-search" class="filter-input" placeholder="Search product..." />
+            <select id="prod-filter-cat" class="filter-select">
+              <option value="">All Categories</option>
+            </select>
+            <select id="prod-filter-stock" class="filter-select">
+              <option value="">All Stock</option>
+              <option value="in_stock">In Stock</option>
+              <option value="out_of_stock">Out of Stock</option>
+            </select>
+          </div>
+        </div>
+        <div class="product-table-wrap">
+          <table class="data-table">
+            <thead><tr>
+              <th>Product</th><th>Brand</th><th>Category</th>
+              <th>Price (₹)</th><th>Discount</th><th>Stock</th>
+            </tr></thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ STORE REVIEWS ════════════════════════════════════════════ -->
+    <section id="tab-store-experience" class="tab-panel hidden">
+      <div class="kpi-grid kpi-grid-4">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Reviews</div>
+          <div class="kpi-value" id="store-total">—</div>
+          <div class="kpi-sub">all sources</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Avg Rating</div>
+          <div class="kpi-value" id="store-avg-rating">—</div>
+          <div class="kpi-sub">★ weighted</div>
+        </div>
+        <div class="kpi-card kpi-success">
+          <div class="kpi-label">Positive</div>
+          <div class="kpi-value" id="store-positive">—</div>
+          <div class="kpi-sub">% of reviews</div>
+        </div>
+        <div class="kpi-card kpi-danger">
+          <div class="kpi-label">Negative</div>
+          <div class="kpi-value" id="store-negative">—</div>
+          <div class="kpi-sub">% of reviews</div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="panel-row">
+        <div class="panel panel-wide">
+          <div class="panel-header">Rating Distribution</div>
+          <div class="chart-wrap"><canvas id="chart-store-ratings"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Sentiment Split</div>
+          <div class="chart-wrap chart-wrap-sm"><canvas id="chart-store-sentiment"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Review list -->
+      <div class="panel">
+        <div class="panel-header">
+          Store Reviews
+          <div class="filter-row">
+            <input id="store-search" class="filter-input" placeholder="Search text..." />
+            <select id="store-filter-sentiment" class="filter-select">
+              <option value="">All Sentiments</option>
+              <option value="positive">Positive</option>
+              <option value="neutral">Neutral</option>
+              <option value="negative">Negative</option>
+            </select>
+            <input id="store-filter-rating" type="number" min="1" max="5" step="0.5"
+                   class="filter-input filter-narrow" placeholder="Min ★" />
+          </div>
+        </div>
+        <div id="store-reviews-list" class="review-list"></div>
+      </div>
+    </section>
+
+    <!-- ══ MARKET INTEL ═════════════════════════════════════════════ -->
+    <section id="tab-market-intel" class="tab-panel hidden">
+
+      <!-- Charts row -->
+      <div class="panel-row">
+        <div class="panel panel-wide">
+          <div class="panel-header">Price Comparison — TOW vs Competitors (₹)</div>
+          <div class="chart-wrap chart-wrap-tall"><canvas id="chart-pricing"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">News by Tag</div>
+          <div class="chart-wrap chart-wrap-tall"><canvas id="chart-news-tags"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Lists row 1 -->
+      <div class="panel-row">
+        <div class="panel">
+          <div class="panel-header">News &amp; Market Updates</div>
+          <div id="news-list" class="news-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Competitive Intel</div>
+          <div id="intel-list" class="intel-list"></div>
+        </div>
+      </div>
+
+      <!-- Lists row 2 -->
+      <div class="panel-row">
+        <div class="panel">
+          <div class="panel-header">Competitors</div>
+          <div id="competitor-list" class="competitor-list"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">Price Threats</div>
+          <div id="pricing-list" class="pricing-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ EXPLORER ═════════════════════════════════════════════════ -->
+    <section id="tab-explorer" class="tab-panel hidden">
+      <div class="panel">
+        <div class="panel-header">Review Explorer — Search All Sources</div>
+        <div class="explorer-controls">
+          <input id="exp-query" class="filter-input exp-search"
+                 placeholder="Search keywords (e.g. rotten, delivery, app crash)..." />
+          <select id="exp-source" class="filter-select">
+            <option value="store">Store Reviews</option>
+            <option value="app">App Reviews</option>
+          </select>
+          <select id="exp-sentiment" class="filter-select">
+            <option value="">All Sentiments</option>
+            <option value="positive">Positive</option>
+            <option value="neutral">Neutral</option>
+            <option value="negative">Negative</option>
+          </select>
+          <button id="exp-search-btn" class="btn-primary btn-sm">Search</button>
+        </div>
+        <div id="explorer-results" class="review-list"></div>
+      </div>
+    </section>
+
+    <!-- ══ LIVE FEED ════════════════════════════════════════════════ -->
+    <section id="tab-live-feed" class="tab-panel hidden">
+      <div class="live-header">
+        <div class="live-title">
+          <span class="pulse-dot"></span>
+          Real-Time Event Feed
+        </div>
+        <div class="live-controls">
+          <label class="toggle-label">
+            <input type="checkbox" id="live-pause" /> Pause
+          </label>
+          <button id="live-clear" class="btn-ghost btn-sm">Clear</button>
+        </div>
+      </div>
+      <div id="live-feed-container" class="live-feed-container">
+        <div class="live-empty">Waiting for events… Ingest data or run alerts to see events here.</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- Chart.js 4 — no build step required -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

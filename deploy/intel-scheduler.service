@@ -1,0 +1,32 @@
+# /etc/systemd/system/intel-scheduler.service
+# Runs the existing scheduler.py (scraper orchestrator) as a long-running daemon.
+# Only needed if you want automated scraping on the server.
+# The scheduler writes tow_*.csv files which the ingest timer picks up hourly.
+
+[Unit]
+Description=TOW Intelligence — Scraper Scheduler
+After=network.target
+Wants=network.target
+
+[Service]
+Type=exec
+User=storm
+Group=storm
+WorkingDirectory=/opt/storm
+EnvironmentFile=/opt/storm/.env
+
+# Install Playwright browsers once before enabling this:
+#   sudo -u storm /opt/storm/.venv/bin/playwright install chromium --with-deps
+ExecStart=/opt/storm/.venv/bin/python scheduler.py
+
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=60
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/storm
+
+[Install]
+WantedBy=multi-user.target

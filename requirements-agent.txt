@@ -1,0 +1,14 @@
+# TOW CI Agent — additional dependencies (on top of requirements-pipeline.txt)
+# Install with: pip install -r requirements-agent.txt
+
+# LangGraph orchestration framework
+langgraph>=0.2.55
+
+# LangChain core (message types used by LangGraph)
+langchain-core>=0.3.0
+
+# Anthropic SDK (Claude Opus 4.7 backbone)
+anthropic>=0.40.0
+
+# Environment variable management (optional, for .env support)
+python-dotenv>=1.0.0

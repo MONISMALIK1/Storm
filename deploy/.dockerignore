@@ -1,0 +1,15 @@
+# Never bake these into the Docker image
+.env
+.env.*
+*.db
+*.db-shm
+*.db-wal
+__pycache__
+*.pyc
+.venv
+venv
+.git
+deploy/
+*.log
+scheduler_state.json
+.DS_Store

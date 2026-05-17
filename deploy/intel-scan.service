@@ -1,0 +1,20 @@
+# /etc/systemd/system/intel-scan.service
+# One-shot service triggered by intel-scan.timer every 30 minutes.
+# Runs the alert detection engine over the recent data window.
+
+[Unit]
+Description=TOW Intelligence — Alert scan run
+After=network.target
+
+[Service]
+Type=oneshot
+User=storm
+Group=storm
+WorkingDirectory=/opt/storm
+EnvironmentFile=/opt/storm/.env
+ExecStart=/opt/storm/.venv/bin/python -m intel.manage scan
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
