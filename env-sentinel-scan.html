@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>env-sentinel scan + audit</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d1117; font-family: 'SF Mono', 'Fira Code', monospace; padding: 32px; }
+
+  .window {
+    background: #161b22;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 760px;
+    border: 1px solid #30363d;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    margin-bottom: 28px;
+  }
+
+  .titlebar {
+    background: #21262d;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #30363d;
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.red    { background: #ff5f57; }
+  .dot.yellow { background: #febc2e; }
+  .dot.green  { background: #28c840; }
+  .title-text { color: #8b949e; font-size: 13px; margin-left: 8px; }
+
+  .terminal { padding: 20px 24px; font-size: 13.5px; line-height: 1.7; }
+
+  .prompt { color: #7ee787; }
+  .cmd    { color: #e6edf3; }
+  .flag   { color: #79c0ff; }
+  .arg    { color: #ffa657; }
+  .dim    { color: #484f58; }
+  .ok     { color: #3fb950; }
+  .warn   { color: #d29922; }
+  .err    { color: #f85149; }
+  .hi     { color: #ff7b72; font-weight: bold; }
+  .med    { color: #e3b341; }
+  .label  { color: #58a6ff; }
+  .white  { color: #e6edf3; }
+  .gray   { color: #8b949e; }
+  .section-title { color: #58a6ff; font-weight: bold; }
+
+  .line   { display: block; white-space: pre; }
+  .blank  { display: block; height: 6px; }
+</style>
+</head>
+<body>
+
+<!-- Screenshot 2: scan command -->
+<div class="window" id="shot2">
+  <div class="titlebar">
+    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+    <span class="title-text">~/myapp — env-sentinel scan</span>
+  </div>
+  <div class="terminal">
+    <span class="line"><span class="prompt">$</span> <span class="cmd">env-sentinel scan</span> <span class="arg">.env.production</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="section-title">🔍  Secret Scan: .env.production</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="err">  🔴 [HIGH]   OPENAI_API_KEY</span></span>
+    <span class="line"><span class="gray">         value : sk-ab****</span></span>
+    <span class="line"><span class="gray">         reason: Matches OpenAI API key pattern (sk-...)</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="err">  🔴 [HIGH]   STRIPE_SECRET_KEY</span></span>
+    <span class="line"><span class="gray">         value : sk_live****</span></span>
+    <span class="line"><span class="gray">         reason: Matches Stripe live API key pattern (sk_live_...)</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="med">  🟡 [MEDIUM] DB_PASSWORD</span></span>
+    <span class="line"><span class="gray">         value : xK9#****</span></span>
+    <span class="line"><span class="gray">         reason: High-entropy value on sensitive key (entropy=4.23)</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="err">  3 finding(s): 2 high, 1 medium</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="gray">  💡 Rotate these credentials immediately and remove from .env files.</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="prompt">$</span> <span class="gray">echo $?</span></span>
+    <span class="line"><span class="err">1</span></span>
+  </div>
+</div>
+
+<!-- Screenshot 3: audit all-clear -->
+<div class="window" id="shot3">
+  <div class="titlebar">
+    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+    <span class="title-text">~/myapp — env-sentinel audit (all green)</span>
+  </div>
+  <div class="terminal">
+    <span class="line"><span class="prompt">$</span> <span class="cmd">env-sentinel audit</span> <span class="flag">--template</span> <span class="arg">.env.example</span> <span class="flag">--check</span> <span class="arg">.env.staging</span> <span class="flag">--check</span> <span class="arg">.env.production</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="section-title">⚑  Multi-environment Audit</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="ok">  ✔ .env.staging     — 0 issues</span></span>
+    <span class="line"><span class="ok">  ✔ .env.production  — 0 issues</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="ok">  ✅ All environments are in sync with template.</span></span>
+    <span class="blank"></span>
+    <span class="line"><span class="prompt">$</span> <span class="gray">echo $?</span></span>
+    <span class="line"><span class="ok">0</span></span>
+  </div>
+</div>
+
+</body>
+</html>
